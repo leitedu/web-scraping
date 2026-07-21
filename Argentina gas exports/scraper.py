@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 from pathlib import Path
 import pandas as pd
+from time import sleep
 
 #Generates list with IDs based on initial and final ID inputed in main.py.
 def gera_lista(pasta):

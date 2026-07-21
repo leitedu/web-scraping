@@ -1,3 +1,6 @@
+import re
+import fitz
+
 #Reads downloaed PDFs and extracts data via Regex, then compile in Excel spreadsheet.
 def scrape_pdf_content(target_dir: str) -> None:
     pasta = Path(target_dir)

@@ -7,13 +7,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-def repdoe():
-    #Coleta dados
-    login = os.getenv('LOGIN')
-    senha = os.getenv('PASSWORD')
-    pasta = os.getenv('FOLDER')
-    dia = date.today() + timedelta(-1)
-
+def loop_try(dia, login, senha, pasta):
     result = False
     tentativas = 0
     while not result and tentativas < 20:

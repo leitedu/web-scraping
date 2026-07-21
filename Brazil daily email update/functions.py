@@ -1,75 +1,88 @@
 from playwright.sync_api import sync_playwright
 from datetime import date, timedelta
 from time import sleep
-from dotenv import load_dotenv
+import win32com.client as win32
 
-
-# Load environment variables from .env file
-load_dotenv()
-
-def loop_try(dia, login, senha, pasta):
+#Loop function to return email's data 
+def loop_try(dia, login, password, pasta):
     result = False
-    tentativas = 0
-    while not result and tentativas < 20:
+    trials = 0
+    #Keep trying to scrape data until possible or a limit of tirals
+    while not result and trials < 20:
         try:
-            local, reservatorios = infos(dia, login, senha, pasta)
+            #Gets path of saved report and dictionary with reservoir level
+            attachments, reservoirs = infos(dia, login, password, pasta)
             result = True
         except:
-            tentativas += 1
+            trials += 1
             sleep(300)
     
+    #Writes email body according to reservoir data            
+    body = (
+        f"Bom dia!<br><br>Seguem informações do dia {dia.strftime('%d/%m/%Y')}.<br><br>"
+        f"<b>Reservatórios</b><br>"
+        f"Sudeste: {reservoirs['se']}<br>"
+        f"Sul: {reservoirs['s']}<br>"
+        f"Nordeste: {reservoirs['ne']}<br>"
+        f"Norte: {reservoirs['n']}"
+    )
+    return [attachments], body # Returns attachments as a list for loop in send_email function
 
-def infos(dia, login, senha, pasta):
+#Scraper
+def infos(dia, login, password, pasta):
 
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=False)
         page = browser.new_page()
 
-        #REPDOE
-        local = f'{pasta}\\REPDOE-{dia.strftime("%Y%m%d")}.pdf'
+        #REPDOE ONS report - Brazil's deeper hidrology analysis, thermal dispatch data, energy imports/exports etc.
+        attachments = f'{pasta}\\REPDOE-{dia.strftime("%Y%m%d")}.pdf' #Path to save the file
 
         with page.expect_download() as download_info:
 
             page.goto(f'https://sintegre.ons.org.br/sites/9/51/_layouts/download.aspx?SourceUrl=/sites/9/51/Produtos/282/REPDOE-{dia.strftime("%Y%m%d")}.pdf')
 
+            # Site Login
             page.locator('xpath=//*[@id="username"]').fill(login)
-            page.locator('xpath=//*[@id="password"]').fill(senha)
+            page.locator('xpath=//*[@id="password"]').fill(password)
             page.locator('xpath=//*[@id="kc-login"]').click()
-
 
         download = download_info.value
         sleep(2)
-        download.save_as(local)
+        download.save_as(attachments)
 
-        #Reservatorios
+        #Current reservoirs level information
         page.goto(f'https://www.ons.org.br/paginas/energia-agora/reservatorios')
         sleep(5)
-        reservatorios = {'se': '', 's': '', 'ne': '', 'n': ''}
+        reservoirs = {'se': '', 's': '', 'ne': '', 'n': ''}
         i = 1
 
         for subsistema in reservatorios:
-            reservatorios[subsistema] = page.locator(f'xpath=/html/body/form/div[11]/div[1]/div[4]/div[3]/div[2]/div[1]/div/div/div/div[1]/div/div[1]/div[{i}]/h5/span').text_content()
+            reservoirs[subsistema] = page.locator(f'xpath=/html/body/form/div[11]/div[1]/div[4]/div[3]/div[2]/div[1]/div/div/div/div[1]/div/div[1]/div[{i}]/h5/span').text_content()
             i += 1
 
         browser.close()
     
-    return local, reservatorios
+    return attachments, reservatorios
 
-def envia_email(assunto, destinatarios: list, corpo, anexos: list):
-    import win32com.client as win32
+def send_email(subject, to: list, body, attachments: list):
     outlook = win32.Dispatch('outlook.application')
     mail = outlook.CreateItem(0)
 
-    # Junta os emails com ;
-    mail.BCC = ';'.join(destinatarios)
+    #Ensures 'to' works whether it's a single string or a list
+    if isinstance(to, str):
+        list_to = [email.strip() for email in to.split(',')]
+    else:
+        list_to = to
+        
+    #Join email addresses - blind carbon copy used for security;
+    mail.BCC = ';'.join(list_to)
 
-    mail.Subject = assunto
-    mail.Body = corpo
-    mail.HTMLBody = f'{corpo}'
+    mail.Subject = subject
+    mail.Body = body
+    mail.HTMLBody = f'{body}'
 
+    for attachment in attachments:
+        mail.Attachments.Add(attachment)
 
-    for anexo in anexos:
-        mail.Attachments.Add(anexo)
-
-    #mail.Display(True)
     mail.Send()

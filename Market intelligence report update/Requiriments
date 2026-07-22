@@ -1,0 +1,13 @@
+playwright
+datetime
+PIL
+bs4
+time
+pathlib
+dotenv
+os
+io
+cv2
+numpy
+pandas
+fitz

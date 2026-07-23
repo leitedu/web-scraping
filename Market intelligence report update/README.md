@@ -16,7 +16,7 @@ To monitor key financial and energy indicators, data is aggregated from several 
 * **CME (Chicago Mercantile Exchange):** Global financial exchange providing futures and options market curves for energy commodities (Brent, TTF, JKM, Currency exchange rates).
 * **Argus & Investing.com:** Financial intelligence platforms providing international benchmark and historical pricing and currency exchange rates.
 
----
+
 
 ## 🔄 How It Works
 
@@ -35,7 +35,7 @@ The system operates as a hybrid pipeline using **Python for Data Ingestion & Ext
 3. **Presentation & Distribution (VBA / Legacy):**
    Once Python finishes data extraction, a secondary Excel spreadsheet reads the scraped files and other company data and imports the updated figures. Thus, ** **report generator.bas (VBA script)** builds a daily **PowerPoint slide deck**, and formats the final report for executive distribution.
 
----
+
 
 ## 🛠️ Technologies Used
 
@@ -45,7 +45,7 @@ The system operates as a hybrid pipeline using **Python for Data Ingestion & Ext
 * **PyMuPDF (`fitz`)** — PDF document parsing and text/image extraction.
 * **VBA (Visual Basic for Applications)** — PowerPoint presentation assembly and report formatting.
 
----
+
 
 ## 🚀 Quick Start (Scraping Pipeline)
 

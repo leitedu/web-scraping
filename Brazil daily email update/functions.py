@@ -4,14 +4,14 @@ from time import sleep
 import win32com.client as win32
 
 #Loop function to return email's data 
-def loop_try(dia, login, password, pasta):
+def loop_try(day, login, password, folder):
     result = False
     trials = 0
     #Keep trying to scrape data until possible or a limit of tirals
     while not result and trials < 20:
         try:
             #Gets path of saved report and dictionary with reservoir level
-            attachments, reservoirs = infos(dia, login, password, pasta)
+            attachments, reservoirs = infos(day, login, password, folder)
             result = True
         except:
             trials += 1
@@ -19,7 +19,7 @@ def loop_try(dia, login, password, pasta):
     
     #Writes email body according to reservoir data            
     body = (
-        f"Bom dia!<br><br>Seguem informações do dia {dia.strftime('%d/%m/%Y')}.<br><br>"
+        f"Bom day!<br><br>Seguem informações do day {day.strftime('%d/%m/%Y')}.<br><br>"
         f"<b>Reservatórios</b><br>"
         f"Sudeste: {reservoirs['se']}<br>"
         f"Sul: {reservoirs['s']}<br>"
@@ -29,18 +29,18 @@ def loop_try(dia, login, password, pasta):
     return [attachments], body # Returns attachments as a list for loop in send_email function
 
 #Scraper
-def infos(dia, login, password, pasta):
+def infos(day, login, password, folder):
 
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=False)
         page = browser.new_page()
 
         #REPDOE ONS report - Brazil's deeper hidrology analysis, thermal dispatch data, energy imports/exports etc.
-        attachments = f'{pasta}\\REPDOE-{dia.strftime("%Y%m%d")}.pdf' #Path to save the file
+        attachments = f'{folder}\\REPDOE-{day.strftime("%Y%m%d")}.pdf' #Path to save the file
 
         with page.expect_download() as download_info:
 
-            page.goto(f'https://sintegre.ons.org.br/sites/9/51/_layouts/download.aspx?SourceUrl=/sites/9/51/Produtos/282/REPDOE-{dia.strftime("%Y%m%d")}.pdf')
+            page.goto(f'https://sintegre.ons.org.br/sites/9/51/_layouts/download.aspx?SourceUrl=/sites/9/51/Produtos/282/REPDOE-{day.strftime("%Y%m%d")}.pdf')
 
             # Site Login
             page.locator('xpath=//*[@id="username"]').fill(login)

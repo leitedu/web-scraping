@@ -1,55 +1,62 @@
 import re
 import fitz
+from pathlib import Path
+import pandas as pd
 
 #Reads downloaed PDFs and extracts data via Regex, then compile in Excel spreadsheet.
 def scrape_pdf_content(target_dir: str) -> None:
-    pasta = Path(target_dir)
-    arquivos = [f for f in pasta.iterdir() if f.suffix == '.pdf']
+    folder = Path(target_dir)
+    files = [f for f in folder.iterdir() if f.suffix == '.pdf']
 
-    dados = {
-        "Vendedor": [], "Comprador": [], "País de destino": [], "Ponto de entrega": [], 
-        "QDC": [], "Quantidade máxima": [], "Firme": [], "Interruptível": [], 
-        "Origem do gás": [], "Início": [], "Fim": [], 'PIST': [], 
-        'Preço Fronteira': [], 'Fórmula de Reajuste?': []
+    #Note: PIST stands for molecule price in transport system entry
+    data = {
+        "Seller": [], "Buyer": [], "Destination country": [], "Delievery point": [], 
+        "Daily Volume Contracted": [], "Maximum volume": [], "Firm": [], "Interruptible": [], 
+        "Gas source": [], "Start": [], "End": [], 'PIST': [], 
+        'Border price': [], 'Reajustment formula?': []
     }
-
-    padroes = {
-        "País de destino": r"País de destino:\s*(.*)",
-        "Ponto de entrega": r"Punto de exportación:\s*(.*)",
-        "QDC": r"Cantidad máxima diaria \(en MMm3\):\s*(.*)",
-        "Quantidade máxima": r"Cantidad máxima total \(en MMm3\)\s*[:|:]\s*(.*)",
-        "Firme": r"En firme:\s*(.*)",
-        "Interruptível": r"Interrumpible:\s*(.*)",
-        "Origem do gás": r"Origen del gas natural \(áreas y yacimiento\):\s*(.*)",
-        "Início": r"Fecha de inicio:\s*(\d{2}/\d{2}/\d{4})",
-        'Fim': r"Fecha de fin:\s*(\d{2}/\d{2}/\d{4})",
+    #Patterns for regex search
+    patterns = {
+        "Destination country": r"País de destino:\s*(.*)",
+        "Delievery point": r"Punto de exportación:\s*(.*)",
+        "Daily Volume Contracted": r"Cantidad máxima diaria \(en MMm3\):\s*(.*)",
+        "Maximum volume": r"Cantidad máxima total \(en MMm3\)\s*[:|:]\s*(.*)",
+        "Firm": r"En firme:\s*(.*)",
+        "Interruptible": r"Interrumpible:\s*(.*)",
+        "Gas source": r"Origen del gas natural \(áreas y yacimiento\):\s*(.*)",
+        "Start": r"Fecha de inicio:\s*(\d{2}/\d{2}/\d{4})",
+        'End': r"Fecha de fin:\s*(\d{2}/\d{2}/\d{4})",
         'PIST': r"Precio a percibir en el punto de ingreso del transporte:\s*([\d.,]+)",
-        'Preço Fronteira': r'Precio en el punto/puntos de exportación de frontera:\s*([\d.,]+)',
-        'Fórmula de Reajuste?': r"¿Aplica fórmula de ajuste\?\s*:\s*([A-Za-zÁÉÍÓÚáéíóúñÑ]+)"
+        'Border price': r'Precio en el punto/puntos de exportación de frontera:\s*([\d.,]+)',
+        'Reajustment formula?': r"¿Aplica fórmula de ajuste\?\s*:\s*([A-Za-zÁÉÍÓÚáéíóúñÑ]+)"
     }
 
-    for arquivo in arquivos:
-        doc = fitz.open(arquivo)
+    for file in files:
+        doc = fitz.open(file)
 
-        #Extracts buyes (Comprador) and Seller (Vendedor) names directly from file name
-        partes_nome = arquivo.stem.split(" - ")
-        dados["Vendedor"].append(partes_nome[1] if len(partes_nome) > 1 else "N/A")
-        dados["Comprador"].append(partes_nome[2] if len(partes_nome) > 2 else "N/A")
+        #Extracts Buyer (Comprador) and Seller (Vendedor) names directly from file name
+        partial_name = file.stem.split(" - ")
+        data["Seller"].append(partial_name[1] if len(partial_name) > 1 else "N/A")
+        data["Buyer"].append(partial_name[2] if len(partial_name) > 2 else "N/A")
 
-        #Searches data from "padroes" in the PDF file 
-        for item, padrao in padroes.items():
-            nomes_encontrados = []
+        #Searches data from "patterns" in the PDF file 
+        for item, pattern in patterns.items():
+            found_names = []
             for page in doc:
-                texto = page.get_text()
-                encontrados = re.findall(padrao, texto)
-                nomes_encontrados.extend(encontrados)
+                dtext = page.get_text()
+                found = re.findall(pattern, dtext)
+                found_names.extend(found)
               
             #Appends result on database or "N/A" if not found
-            if nomes_encontrados:
-                dados[item].append(nomes_encontrados[0])
+            if found_names:
+                data[item].append(found_names[0].strip())
             else:
-                dados[item].append('N/A')
+                data[item].append('N/A')
               
     #Generates Excel file database and saves it
-    df = pd.DataFrame(dados)
-    df.to_excel(pasta / 'BD_licencas_Brasil.xlsx', index=False)
+    df = pd.DataFrame(data)
+    #Translates Spanish
+    cols = ['Firm', 'Interruptible', 'Reajustment formula?']
+    df[cols] = df[cols].replace({'Si': 'Yes', 'Sí': 'Yes', 'No': 'No'})
+    #Saves database
+    df.to_excel(folder / 'Licenses_database.xlsx', index=False)

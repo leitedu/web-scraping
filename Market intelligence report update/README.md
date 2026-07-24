@@ -36,7 +36,7 @@ The system operates as a hybrid pipeline using **Python for Data Ingestion & Ext
    The raw extracted data, dynamic web screenshots, and tables compiled into structured Excel datasets (`pandas`/`openpyxl`) and local temporary files.
 
 3. **Presentation & Distribution (VBA / Legacy):**
-   Once Python finishes data extraction, a secondary Excel spreadsheet reads the scraped files and other company data and imports the updated figures. Thus, ** **report generator.bas (VBA script)** builds a daily **PowerPoint slide deck**, and formats the final report for executive distribution.
+   Once Python finishes data extraction, a secondary Excel spreadsheet reads the scraped files and other company data and imports the updated figures. Thus, **report generator.bas (VBA script)** builds a daily **PowerPoint slide deck**, and formats the final report for executive distribution.
 
 
 

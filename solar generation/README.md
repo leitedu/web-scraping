@@ -1,7 +1,9 @@
 # Solar Assets Generation Data Collection Automation
 
-  > 🔍 **Project Type:** Showcase / Proof of Concept
-**Attention:** This repository contains automation logic only. It does **not** contain any authentication credentials or sensitive environment data. It is presented here primarily as a **code architecture showcase** rather than a publicly runnable application.
+![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
+![Execution](https://img.shields.io/badge/Execution-Showcase_Only-blue?style=for-the-badge)
+
+**Attention:** This repository contains automation logic only. It does not contain any authentication credentials or sensitive environment data. It is presented here primarily as a code architecture showcase rather than a publicly runnable application, due to its exclusive dependency on private credentials.
 
 ## 📌 Business Context & Value
 

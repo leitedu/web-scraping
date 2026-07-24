@@ -1,5 +1,8 @@
 # Market Intelligence & Energy Report Automation
 
+![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
+![Execution](https://img.shields.io/badge/Execution-Fully_Runnable-success?style=for-the-badge)
+
 > * **Execution Note:** This project relies partly on private credentials and internal corporate endpoints. It is presented here primarily as a **code architecture showcase**, but can be executed according to the following breakdown:
 >   * **scraping.py (Python Pipeline):** Can be executed locally for testing and demonstration purposes. Automaticly skips pages that requires login if credentials are not provided
 >   * **report generator.bas (VBA Module):** Included as illustrative reference to provide full context on the legacy process and end-to-end workflow.

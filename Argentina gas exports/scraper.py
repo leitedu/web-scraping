@@ -1,54 +1,71 @@
 from playwright.sync_api import sync_playwright
 from pathlib import Path
-import pandas as pd
 from time import sleep
-
-#Generates list with IDs based on initial and final ID inputed in main.py.
-def gera_lista(pasta):
-    arquivos = os.listdir(pasta)
-    numbers = [int(x[:3]) for x in arquivos]
-
-    return numbers
+import pandas as pd
+import re
 
 #Scrapes Secretariat of Energy's website and downloads PDF gas export authorizations
-def download_gas_licenses(id_min: int, id_max: int, target_dir: str):
-    pasta = Path(target_dir)
-    pasta.mkdir(parents=True, exist_ok=True)
+def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str, attempts: int, target_dir: str):
+    folder = Path(target_dir)
+    folder.mkdir(parents=True, exist_ok=True)
     
-    erros = []
-    paises = {}
+    results = [] #Results
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
+        context = browser.new_context(ignore_https_errors=True)
+        page = context.new_page()
         
-        for i in range(id_max, id_min, -1):
-            try:
-                sleep(2)
-                url = f'https://exportaciongasnatural.energia.gob.ar/exportacion-gas-natural/detalle/id/{i}'
-                page.goto(url, wait_until='load', ignore_https_errors=True)
-                sleep(2)
-                
-                pais = page.locator('xpath=/html/body/main/div/div/div/div[2]/div[2]/div[2]/div[2]/p').inner_text()
-                paises[i] = pais
+        for i in range(id_min, id_max):
 
-                if 'Brasil' not in pais:
-                    continue
+            url = f'https://exportaciongasnatural.energia.gob.ar/exportacion-gas-natural/detalle/id/{i}'
+            page.goto(url)
+            sleep(0.1) #Avoids error on playwright asyncio internal running
 
-                vendedor = page.locator('xpath=/html/body/main/div/div/div/div[2]/div[1]/div[2]/div/p/span').text_content().split(":")[1].split("\t")[0].strip()
-                comprador = page.locator('xpath=/html/body/main/div/div/div/div[2]/div[1]/div[2]/div/p/span').text_content().split(":")[-1][:-2].strip()
+            #Reads destination country
+            dest_country = page.locator(".panel:has-text('Destino') .panel-body p").inner_text().strip().replace('.', '')
 
-                with page.expect_download() as download_info:
-                    page.locator('xpath=/html/body/main/div/div/div/div[3]/table/tbody/tr/td[2]/a').click()
+            #Reads seller company name
+            raw_text_seller = page.locator("p:has-text('Vendedor:')").inner_text()
+            match = re.search(r"Vendedor:\s*(.*?)(?=\s*CUIT|\n|$)", raw_text_seller)
+            if match:
+                seller = match.group(1).strip().replace('.', '')
 
-                download = download_info.value
-                file_name = f"{i} - {vendedor} - {comprador}.pdf"
-                download.save_as(pasta / file_name)
-                
-            except Exception:
-                erros.append(i)
-                continue
-                
-    print(f'Erros encontrados nos IDs: {erros}')
-    df = pd.DataFrame(list(paises.items()), columns=['ID', 'Pais'])
-    df.to_excel(pasta / 'Licencas_por_pais.xlsx', index=False)
+            #Reads buyer company name
+            raw_text_buyer = page.locator("p:has-text('Vendedor:')").inner_text()
+            match = re.search(r"Comprador:\s*(.*)", raw_text_buyer)
+            if match:
+                buyer = match.group(1).strip().replace('.', '')
+
+            #Downloads licenses from specified country or all liceses if no country is provided
+            if (download == True) and (country in dest_country or country == None):
+
+                #Sets PDF name and path
+                file_name = f"{i} - {seller} - {buyer}.pdf"
+                file_path = folder / file_name
+
+                #Verifies if file is already downloaded and saves it in the file_path if it is not.
+                if not file_path.exists():
+
+                    pdf_url = page.locator("#secondary:has(h4:has-text('Adjuntos')) a.download").get_attribute("href")
+
+                    #Try to request until defined maximum atempts
+                    for attempt in range(1, attempts):
+                        try:
+                            response = page.request.get(pdf_url, timeout=30000)
+                            with open(folder / file_name, "wb") as f:
+                                f.write(response.body())
+                        except:
+                            sleep(2*attempt) #Increases waiting time as attempts counter increases
+
+            #Appends new row to list of results
+            results.append({
+                    "ID": i,
+                    "Country": dest_country,
+                    "Seller": seller,
+                    "Buyer": buyer
+                })
+
+    #Converts list of results in a dataframe       
+    df = pd.DataFrame(results)
+    df.to_excel(folder / 'Licenses_by_country.xlsx', index=False)

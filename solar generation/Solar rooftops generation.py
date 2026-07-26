@@ -12,7 +12,7 @@ import os
 GROWATT_URL = 'https://server.growatt.com/login'
 GROWATT_PASSWORD = os.getenv('PASSWORD_GROWATT')
 ROOFTOPS = [os.getenv('ROOFTOP_1'), os.getenv('ROOFTOP_2')]
-SAVE_PATH = Path(os.getenv('PASTA_ROOFTOPS'))
+SAVE_PATH = Path(os.getenv('FOLDER_ROOFTOPS'))
 
 # Setup Chrome options for headless execution
 chrome_options = Options()

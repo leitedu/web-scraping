@@ -49,12 +49,12 @@ To run the scripts, it's necessary to configure credentials locally in an `.env`
 
 | Variable | Description |
 | :--- | :--- |
-| `LOGIN_ISOLAR` / `SENHA_ISOLAR` | Credentials for the iSolarCloud portal. |
-| `SENHA_GROWATT` | Password for the Growatt rooftop portals. |
-| `FAZENDA_1` / `FAZENDA_2` | Names of the utility-scale solar farms. |
-| `TELHADO_1` / `TELHADO_2` | Login IDs for the rooftop units (same name as rooftop itself). |
-| `PASTA_UFVS` | Destination path for solar farm reports. |
-| `PASTA_TELHADOS` | Destination path for rooftop screenshots. |
+| `LOGIN_ISOLAR` / `PASSWORD_ISOLAR` | Credentials for the iSolarCloud portal. |
+| `PASSWORD_GROWATT` | Password for the Growatt rooftop portals. |
+| `FARM_1` / `FARM_2` | Names of the utility-scale solar farms. |
+| `ROOFTOP_1` / `ROOFTOP_2` | Login IDs for the rooftop units (same name as rooftop itself). |
+| `FOLDER_UFVS` | Destination path for solar farm reports. |
+| `FOLDER_ROOFTOPS` | Destination path for rooftop screenshots. |
 
 
 ## 🛠️ Technologies Used

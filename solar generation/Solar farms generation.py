@@ -16,9 +16,9 @@ load_dotenv()
 # Configuration
 ISOLAR_URL = 'https://www.isolarcloud.com.hk/?lang=pt_BR'
 LOGIN = os.getenv('LOGIN_ISOLAR')
-PASSWORD = os.getenv('SENHA_ISOLAR')
-DOWNLOAD_FOLDER = os.getenv('PASTA_UFVS')
-PLANTS = [os.getenv('FAZENDA_1'), os.getenv('FAZENDA_2')]
+PASSWORD = os.getenv('PASSWORD_ISOLAR')
+DOWNLOAD_FOLDER = os.getenv('FOLDER_UFVS')
+PLANTS = [os.getenv('FARM_1'), os.getenv('FARM_2')]
 yesterday = datetime.today() - timedelta(days=1)
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
@@ -40,7 +40,7 @@ driver.maximize_window()
 
 # Login Process
 login_field = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[placeholder='Conta']")))
-password_field = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[placeholder='Senha']")))
+password_field = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[placeholder='PASSWORD']")))
 login_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-v-b76c5374]")))
 
 login_field.send_keys(LOGIN)

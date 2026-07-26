@@ -17,7 +17,7 @@ load_dotenv()
 ISOLAR_URL = 'https://www.isolarcloud.com.hk/?lang=pt_BR'
 LOGIN = os.getenv('LOGIN_ISOLAR')
 PASSWORD = os.getenv('PASSWORD_ISOLAR')
-DOWNLOAD_FOLDER = os.getenv('FOLDER_UFVS')
+DOWNLOAD_FOLDER = os.getenv('FOLDER_FARMS')
 PLANTS = [os.getenv('FARM_1'), os.getenv('FARM_2')]
 yesterday = datetime.today() - timedelta(days=1)
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)

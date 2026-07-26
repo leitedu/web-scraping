@@ -10,9 +10,9 @@ import os
 # --- Configuration ---
 # Set up URLs and environment variables
 GROWATT_URL = 'https://server.growatt.com/login'
-GROWATT_PASSWORD = os.getenv('SENHA_GROWATT')
-ROOFTOPS = [os.getenv('TELHADO_1'), os.getenv('TELHADO_2')]
-SAVE_PATH = Path(os.getenv('PASTA_TELHADOS'))
+GROWATT_PASSWORD = os.getenv('PASSWORD_GROWATT')
+ROOFTOPS = [os.getenv('ROOFTOP_1'), os.getenv('ROOFTOP_2')]
+SAVE_PATH = Path(os.getenv('PASTA_ROOFTOPS'))
 
 # Setup Chrome options for headless execution
 chrome_options = Options()

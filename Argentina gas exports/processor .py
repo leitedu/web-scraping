@@ -17,8 +17,8 @@ def scrape_pdf_content(target_dir: str) -> None:
     }
 
     patterns = {
-        "Destination country": r"País de destino:\s*(.*)",
-        "Delievery point": r"Punto de exportación:\s*(.*)",
+        "Destination country": r"País de destino:?\s*([\s\S]+?)(?=\n\s*\n|\n[A-ZÁÉÍÓÚ]|$)",
+        "Delievery point": r"Punto de exportación:?\s*([\s\S]+?)(?=\n\s*\n|\n[A-ZÁÉÍÓÚ]|$)",
         "Daily Volume Contracted": r"Cantidad máxima diaria \(en MMm3\):\s*(.*)",
         "Maximum volume": r"Cantidad máxima total \(en MMm3\)\s*[:|:]\s*(.*)",
         "Firm": r"En firme:\s*(.*)",

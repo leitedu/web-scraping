@@ -84,7 +84,7 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
 
     #Converts list of results in a dataframe       
     df = pd.DataFrame(results)
-    df.to_excel(folder / 'Licenses_by_country.xlsx', index=False)
+    df.to_excel(folder / 'macro_gas_licenses_database.xlsx', index=False)
 
     #Saves errors list if any is found:
     if len(errors) > 0:

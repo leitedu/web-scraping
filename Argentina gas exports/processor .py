@@ -72,7 +72,7 @@ def scrape_pdf_content(target_dir: str) -> None:
     df.insert(len(df.columns) - 2, transport_col.name, transport_col)
 
     #Saves df as excel file
-    df.to_excel(folder / 'Licenses_database.xlsx', index=False)
+    df.to_excel(folder / 'detailed_gas_licenses_database.xlsx', index=False)
 
 def parse_mixed_price(val):
     val_str = str(val).strip() #text treatment

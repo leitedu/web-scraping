@@ -35,7 +35,7 @@ The main orchestrator execution flow operates as follows:
    ├── 3. Reservoir Data Ingestion
    │      └── Extract hydro storage levels from public ONS page
    │      └── Generate email HTML/text body
-   |
+   │
    ├── 4. Teardown
    │      └── Safely close Playwright browser context
    │

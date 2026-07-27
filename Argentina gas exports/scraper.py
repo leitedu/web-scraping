@@ -13,7 +13,7 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
     errors = [] #Saves any ID that results error
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch()
         context = browser.new_context(ignore_https_errors=True)
         page = context.new_page()
         

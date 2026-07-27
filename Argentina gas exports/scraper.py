@@ -10,6 +10,7 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
     folder.mkdir(parents=True, exist_ok=True)
     
     results = [] #Results
+    errors = [] #Saves any ID that results error
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
@@ -26,14 +27,14 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
             dest_country = page.locator(".panel:has-text('Destino') .panel-body p").inner_text().strip().replace('.', '')
 
             #Reads seller company name
-            raw_text_seller = page.locator("p:has-text('Vendedor:')").inner_text()
-            match = re.search(r"Vendedor:\s*(.*?)(?=\s*CUIT|\n|$)", raw_text_seller)
+            raw_text_seller = page.locator("p:has-text('Vendedor')").inner_text()
+            match = re.search(r"Vendedor\s*:?\s*(.*?)(?=\s*CUIT|\n|$)", raw_text_seller)
             if match:
                 seller = match.group(1).strip().replace('.', '')
 
             #Reads buyer company name
-            raw_text_buyer = page.locator("p:has-text('Vendedor:')").inner_text()
-            match = re.search(r"Comprador:\s*(.*)", raw_text_buyer)
+            raw_text_buyer = page.locator("p:has-text('Vendedor')").inner_text()
+            match = re.search(r"Comprador\s*:?\s*(.*)", raw_text_buyer)
             if match:
                 buyer = match.group(1).strip().replace('.', '')
 
@@ -45,18 +46,33 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
                 file_path = folder / file_name
 
                 #Verifies if file is already downloaded and saves it in the file_path if it is not.
-                if not file_path.exists():
+                try:
+                    if not file_path.exists():
+        
+                        license = page.locator("#secondary:has(h4:has-text('Adjuntos')) a.download")
+                        if license.count() == 0:
+                            raise ValueError("License PDF not found")
+                        
+                        pdf_url = license.get_attribute("href")
+                        if not pdf_url:
+                            raise ValueError("PDF 'href' is empty")
 
-                    pdf_url = page.locator("#secondary:has(h4:has-text('Adjuntos')) a.download").get_attribute("href")
-
-                    #Try to request until defined maximum atempts
-                    for attempt in range(1, attempts):
-                        try:
-                            response = page.request.get(pdf_url, timeout=30000)
-                            with open(folder / file_name, "wb") as f:
-                                f.write(response.body())
-                        except:
-                            sleep(2*attempt) #Increases waiting time as attempts counter increases
+                        #Try to request until defined maximum atempts
+                        download_success = False
+                        for attempt in range(1, attempts):
+                            try:
+                                response = page.request.get(pdf_url, timeout=30000)
+                                with open(folder / file_name, "wb") as f:
+                                    f.write(response.body())
+                                download_success = True
+                                break
+                            except:
+                                sleep(2*attempt) #Increases waiting time as attempts counter increases
+                    if not download_success:
+                        raise Exception(f"Falha após {attempts} tentativas. Motivo: {attempt}")
+                    
+                except Exception as e:
+                    errors.append(f'{i} - {e}')
 
             #Appends new row to list of results
             results.append({
@@ -69,3 +85,5 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
     #Converts list of results in a dataframe       
     df = pd.DataFrame(results)
     df.to_excel(folder / 'Licenses_by_country.xlsx', index=False)
+    with open(folder / 'errors.txt', "w", encoding="utf-8") as file:
+        file.write("\n".join(errors))

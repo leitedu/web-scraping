@@ -8,14 +8,14 @@ def scrape_pdf_content(target_dir: str) -> None:
     folder = Path(target_dir)
     files = [f for f in folder.iterdir() if f.suffix == '.pdf']
 
-    #Note: PIST stands for molecule price in transport system entry
+    #Note 1: PIST stands for molecule price in transport system entry
     data = {
-        "Seller": [], "Buyer": [], "Destination country": [], "Delievery point": [], 
+        "ID": [], "Seller": [], "Buyer": [], "Destination country": [], "Delievery point": [], 
         "Daily Volume Contracted": [], "Maximum volume": [], "Firm": [], "Interruptible": [], 
         "Gas source": [], "Start": [], "End": [], 'PIST': [], 
         'Border price': [], 'Reajustment formula?': []
     }
-    #Patterns for regex search
+
     patterns = {
         "Destination country": r"País de destino:\s*(.*)",
         "Delievery point": r"Punto de exportación:\s*(.*)",
@@ -26,8 +26,8 @@ def scrape_pdf_content(target_dir: str) -> None:
         "Gas source": r"Origen del gas natural \(áreas y yacimiento\):\s*(.*)",
         "Start": r"Fecha de inicio:\s*(\d{2}/\d{2}/\d{4})",
         'End': r"Fecha de fin:\s*(\d{2}/\d{2}/\d{4})",
-        'PIST': r"Precio a percibir en el punto de ingreso del transporte:\s*([\d.,]+)",
-        'Border price': r'Precio en el punto/puntos de exportación de frontera:\s*([\d.,]+)',
+        'PIST': r"Precio a percibir en el punto de ingreso del transporte:\s*([\s\S]+?)(?=\n\n|\n[¿A-ZÁÉÍÓÚ]|$)",
+        'Border price': r"Precio en el punto/puntos de exportación de frontera:\s*([\s\S]+?)(?=\n\n|\n[¿A-ZÁÉÍÓÚ]|$)",
         'Reajustment formula?': r"¿Aplica fórmula de ajuste\?\s*:\s*([A-Za-zÁÉÍÓÚáéíóúñÑ]+)"
     }
 
@@ -36,8 +36,9 @@ def scrape_pdf_content(target_dir: str) -> None:
 
         #Extracts Buyer (Comprador) and Seller (Vendedor) names directly from file name
         partial_name = file.stem.split(" - ")
-        data["Seller"].append(partial_name[1] if len(partial_name) > 1 else "N/A")
-        data["Buyer"].append(partial_name[2] if len(partial_name) > 2 else "N/A")
+        data["ID"].append(partial_name[0].strip() if len(partial_name) > 1 else "N/A")
+        data["Seller"].append(partial_name[1].strip() if len(partial_name) > 1 else "N/A")
+        data["Buyer"].append(partial_name[2].strip() if len(partial_name) > 2 else "N/A")
 
         #Searches data from "patterns" in the PDF file 
         for item, pattern in patterns.items():
@@ -53,10 +54,41 @@ def scrape_pdf_content(target_dir: str) -> None:
             else:
                 data[item].append('N/A')
               
-    #Generates Excel file database and saves it
+    #Generates dataframe
     df = pd.DataFrame(data)
-    #Translates Spanish
-    cols = ['Firm', 'Interruptible', 'Reajustment formula?']
-    df[cols] = df[cols].replace({'Si': 'Yes', 'Sí': 'Yes', 'No': 'No'})
-    #Saves database
+
+    #Translates Y/N columns in Spanish
+    cols_translate = ['ID', 'Firm', 'Interruptible', 'Reajustment formula?']
+    df[cols_translate] = df[cols_translate].replace({'Si': 'Yes', 'Sí': 'Yes', 'No': 'No'})
+
+    #Converts numeric values of prices and volumes to float and preserves formulas as strings
+    cols_convert = ['Daily Volume Contracted', 'Maximum volume', 'PIST', 'Border price']
+    for col in cols_convert:
+        df[col] = df[col].apply(parse_mixed_price)
+
+    #Creates transport price as the difference of border price and PIST and replaces it
+    df['Transport price'] = df.apply(calculate_transport, axis=1)
+    transport_col = df.pop(df.columns[-1])
+    df.insert(len(df.columns) - 2, transport_col.name, transport_col)
+
+    #Saves df as excel file
     df.to_excel(folder / 'Licenses_database.xlsx', index=False)
+
+def parse_mixed_price(val):
+    val_str = str(val).strip() #text treatment
+    temp_str = val_str.replace(',', '.') #decimal adjustment
+    
+    try:
+        return float(temp_str) # converts numerical values to float
+    except ValueError:
+        return val_str #keeps original string (with formula or note) on error
+
+def calculate_transport(row):
+    border = row['Border price']
+    pist = row['PIST']
+    
+    # Calculates transport if both border price and PIST are numbers
+    if isinstance(border, (int, float)) and isinstance(pist, (int, float)):
+        return round(border - pist, 4)
+    else:
+        return "N/A"

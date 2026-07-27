@@ -48,14 +48,14 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
                 #Verifies if file is already downloaded and saves it in the file_path if it is not.
                 try:
                     if not file_path.exists():
-        
+                        
                         license = page.locator("#secondary:has(h4:has-text('Adjuntos')) a.download")
                         if license.count() == 0:
-                            raise ValueError("License PDF not found")
+                            raise ValueError("License PDF not found") #handles error on PDF license link search
                         
                         pdf_url = license.get_attribute("href")
                         if not pdf_url:
-                            raise ValueError("PDF 'href' is empty")
+                            raise ValueError("PDF 'href' is empty") #handles error on PDF license content
 
                         #Try to request until defined maximum atempts
                         download_success = False
@@ -69,7 +69,7 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
                             except:
                                 sleep(2*attempt) #Increases waiting time as attempts counter increases
                     if not download_success:
-                        raise Exception(f"Falha após {attempts} tentativas. Motivo: {attempt}")
+                        raise Exception(f"Failure after {attempts} attempts. Reason: {attempt}") #handles error on PDF download
                     
                 except Exception as e:
                     errors.append(f'{i} - {e}')
@@ -85,5 +85,8 @@ def gas_licenses_database(id_min: int, id_max: int, download: bool, country: str
     #Converts list of results in a dataframe       
     df = pd.DataFrame(results)
     df.to_excel(folder / 'Licenses_by_country.xlsx', index=False)
-    with open(folder / 'errors.txt', "w", encoding="utf-8") as file:
-        file.write("\n".join(errors))
+
+    #Saves errors list if any is found:
+    if len(errors) > 0:
+        with open(folder / 'errors.txt', "w", encoding="utf-8") as file:
+            file.write("\n".join(errors))

@@ -95,6 +95,19 @@ This project executes a two-tier extraction process designed for scalability and
 * **Language Standardization**: Automatically translates Spanish Boolean flags (`Si`/`No` -> `Yes`/`No`) and converts European/Latin decimal commas (`3,50`) to standard floating-point dots (`3.50`).
 
 
+## 🛠️ Technologies Used
+* **Python 3**
+* **Playwright** (Headless browser automation)
+* **PyMuPDF / fitz** (PDF processing)
+* **Pandas** (Data structuring and export)
+* **Regular Expressions (Regex)** (Pattern matching for specific contract clauses)
+
+Install the required dependencies:
+```bash
+pip install -r requirements.txt
+playwright install chromium
+```
+
 ## ⚙️ Configuration & Usage
 
 All pipeline execution parameters are centralized inside `main.py`.
@@ -137,16 +150,4 @@ licenses/
 ├── macro_gas_licenses_database.xlsx    # Database 1: High-Level Web Metadata
 └── detailed_gas_licenses_database.xlsx # Database 2: Deep PDF Parsed Dataset
 ```
-
-## 🛠️ Technologies Used
-* **Python 3**
-* **Playwright** (Headless browser automation)
-* **PyMuPDF / fitz** (PDF processing)
-* **Pandas** (Data structuring and export)
-* **Regular Expressions (Regex)** (Pattern matching for specific contract clauses)
-
-Install the required dependencies:
-```bash
-pip install -r requirements.txt
-playwright install chromium
 

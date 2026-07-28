@@ -64,3 +64,15 @@ To run the scripts, it's necessary to configure credentials locally in an `.env`
 * **Python Standard Library:**
   * `datetime` — For handling date calculations and dynamic time intervals.
   * `pathlib` & `os` — For file system path manipulations and environment handling.
+
+## 🚀 Quick Start
+1. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Create a .env file in the root directory based on the .env.example template and fill in your credentials.
+4. Run the funcions:
+> Example:
+   ```bash
+   python Solar farms generation.py
+   ```

@@ -9,7 +9,7 @@ It is structured to download license PDFs, parse their contents, and compile a c
 
 
 ## 🌎 Business & Regulatory Context
-In the energy sector, regulatory compliance and public transparency generate a massive amount of valuable data. The Argentine government publishes official natural gas export permits on a [public portal](exportaciongasnatural.energia.gob.ar/exportacion-gas-natural), where each authorization is tied to a unique ID. 
+In the energy sector, regulatory compliance and public transparency generate a massive amount of valuable data. The Argentine government publishes official natural gas export permits on a [public portal]([exportaciongasnatural.energia.gob.ar/exportacion-gas-natural](https://exportaciongasnatural.energia.gob.ar/exportacion-gas-natural)), where each authorization is tied to a unique ID. 
 
 This pipeline was built to apply data engineering in extraction of key commercial conditions (pricing, volumes, delivery points, and durations) that are crucial for market analysis.
 
